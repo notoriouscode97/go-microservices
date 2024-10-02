@@ -7,8 +7,20 @@ import (
 // ErrProductNotFound is an error raised when a product can not be found in the database
 var ErrProductNotFound = fmt.Errorf("Product not found")
 
+// swagger:response errorResponse
+type ErrorResponse struct {
+}
+
+// swagger:response errorValidation
+type ErrorValidation struct {
+}
+
+// swagger:response noContentResponse
+type NoContent struct {
+}
+
 // Product defines the structure for an API product
-// swagger:model
+// swagger:response productResponse
 type Product struct {
 	// the id for the product
 	//
