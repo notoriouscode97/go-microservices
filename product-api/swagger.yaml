@@ -3,16 +3,16 @@ consumes:
     - application/json
 definitions:
     GenericError:
-        description: GenericError GenericError GenericError GenericError is a generic error message returned by a server
+        description: GenericError GenericError GenericError GenericError GenericError is a generic error message returned by a server
         properties:
             message:
                 description: message
                 type: string
                 x-go-name: Message
         type: object
-        x-go-package: github.com/notoriouscode97/sdk/models
+        x-go-package: github.com/notoriouscode97/product-api/sdk/models
     Product:
-        description: Product Product Product Product defines the structure for an API product
+        description: Product Product Product Product Product defines the structure for an API product
         properties:
             description:
                 description: the description for this poduct
@@ -46,9 +46,9 @@ definitions:
             - price
             - sku
         type: object
-        x-go-package: github.com/notoriouscode97/sdk/models
+        x-go-package: github.com/notoriouscode97/product-api/sdk/models
     ValidationError:
-        description: ValidationError ValidationError ValidationError ValidationError is a collection of validation error messages
+        description: ValidationError ValidationError ValidationError ValidationError ValidationError is a collection of validation error messages
         properties:
             messages:
                 description: messages
@@ -57,7 +57,7 @@ definitions:
                 type: array
                 x-go-name: Messages
         type: object
-        x-go-package: github.com/notoriouscode97/sdk/models
+        x-go-package: github.com/notoriouscode97/product-api/sdk/models
 info:
     description: Documentation for Product API
     title: of Product API

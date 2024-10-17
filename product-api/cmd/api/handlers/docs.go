@@ -15,7 +15,7 @@
 // swagger:meta
 package handlers
 
-import "github.com/notoriouscode97/cmd/api/data"
+import "github.com/notoriouscode97/product-api/cmd/api/data"
 
 //
 // NOTE: Types defined here are purely for documentation purposes

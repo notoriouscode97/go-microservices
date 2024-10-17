@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"github.com/notoriouscode97/cmd/api/data"
+	"github.com/notoriouscode97/product-api/cmd/api/data"
 	"log"
 	"net/http"
 	"strconv"

@@ -1,4 +1,4 @@
-module github.com/notoriouscode97
+module github.com/notoriouscode97/product-api
 
 go 1.22.3
 

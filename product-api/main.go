@@ -6,8 +6,9 @@ import (
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/nicholasjackson/env"
-	"github.com/notoriouscode97/cmd/api/data"
-	"github.com/notoriouscode97/cmd/api/handlers"
+	protos "github.com/notoriouscode97/currency/protos/currency"
+	"github.com/notoriouscode97/product-api/cmd/api/data"
+	"github.com/notoriouscode97/product-api/cmd/api/handlers"
 	"log"
 	"net/http"
 	"os"
@@ -23,6 +24,9 @@ func main() {
 	l := log.New(os.Stdout, "products-api ", log.LstdFlags)
 	v := data.NewValidation()
 	ph := handlers.NewProducts(l, v)
+
+	// create client
+	protos.NewCurrencyClient()
 
 	sm := mux.NewRouter()
 
