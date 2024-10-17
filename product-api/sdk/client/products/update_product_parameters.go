@@ -15,7 +15,7 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/notoriouscode97/sdk/models"
+	"github.com/notoriouscode97/product-api/sdk/models"
 )
 
 // NewUpdateProductParams creates a new UpdateProductParams object,
