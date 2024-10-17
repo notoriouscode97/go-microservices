@@ -9,6 +9,8 @@ import (
 	protos "github.com/notoriouscode97/go-microservices/currency/protos/currency"
 	"github.com/notoriouscode97/go-microservices/product-api/cmd/api/data"
 	"github.com/notoriouscode97/go-microservices/product-api/cmd/api/handlers"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net/http"
 	"os"
@@ -23,10 +25,18 @@ func main() {
 
 	l := log.New(os.Stdout, "products-api ", log.LstdFlags)
 	v := data.NewValidation()
-	ph := handlers.NewProducts(l, v)
+
+	conn, err := grpc.NewClient("localhost:9092", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(err)
+	}
+
+	defer conn.Close()
 
 	// create client
-	protos.NewCurrencyClient()
+	cc := protos.NewCurrencyClient(conn)
+
+	ph := handlers.NewProducts(l, v, cc)
 
 	sm := mux.NewRouter()
 
@@ -88,7 +98,7 @@ func main() {
 
 	defer cancel()
 
-	err := s.Shutdown(ctx)
+	err = s.Shutdown(ctx)
 
 	if err != nil {
 		l.Printf("Error starting server: %s\n", err)
