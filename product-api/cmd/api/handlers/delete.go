@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"errors"
-	"github.com/notoriouscode97/product-api/cmd/api/data"
+	"github.com/notoriouscode97/go-microservices/product-api/cmd/api/data"
 	"net/http"
 )
 

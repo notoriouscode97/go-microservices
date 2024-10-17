@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 	"github.com/hashicorp/go-hclog"
-	protos "github.com/notoriouscode97/currency/protos/currency"
+	protos "github.com/notoriouscode97/go-microservices/currency/protos/currency"
 )
 
 type Currency struct {

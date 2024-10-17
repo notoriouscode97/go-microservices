@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/hashicorp/go-hclog"
-	protos "github.com/notoriouscode97/currency/protos/currency"
-	"github.com/notoriouscode97/currency/server"
+	protos "github.com/notoriouscode97/go-microservices/currency/protos/currency"
+	"github.com/notoriouscode97/go-microservices/currency/server"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"net"

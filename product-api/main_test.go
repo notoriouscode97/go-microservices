@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/notoriouscode97/sdk/client"
-	"github.com/notoriouscode97/sdk/client/products"
+	"github.com/notoriouscode97/go-microservices/product-api/sdk/client"
+	"github.com/notoriouscode97/go-microservices/product-api/sdk/client/products"
 	"testing"
 )
 
