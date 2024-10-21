@@ -3,9 +3,10 @@ package data
 import (
 	"encoding/xml"
 	"fmt"
-	"github.com/hashicorp/go-hclog"
 	"net/http"
 	"strconv"
+
+	"github.com/hashicorp/go-hclog"
 )
 
 type ExchangeRates struct {
@@ -24,12 +25,12 @@ func NewRates(l hclog.Logger) (*ExchangeRates, error) {
 func (e *ExchangeRates) GetRate(base, dest string) (float64, error) {
 	br, ok := e.rates[base]
 	if !ok {
-		return 0, fmt.Errorf("rate not found for currency %s", base)
+		return 0, fmt.Errorf("Rate not found for currency %s", base)
 	}
 
 	dr, ok := e.rates[dest]
 	if !ok {
-		return 0, fmt.Errorf("rate not found for currency %s", dest)
+		return 0, fmt.Errorf("Rate not found for currency %s", dest)
 	}
 
 	return dr / br, nil
@@ -38,25 +39,23 @@ func (e *ExchangeRates) GetRate(base, dest string) (float64, error) {
 func (e *ExchangeRates) getRates() error {
 	resp, err := http.DefaultClient.Get("https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml")
 	if err != nil {
-		return err
+		return nil
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("expected code 200 got %d", resp.StatusCode)
+		return fmt.Errorf("Expected error code 200 got %d", resp.StatusCode)
 	}
-
 	defer resp.Body.Close()
 
 	md := &Cubes{}
-	if err := xml.NewDecoder(resp.Body).Decode(&md); err != nil {
-		return err
-	}
+	xml.NewDecoder(resp.Body).Decode(&md)
 
 	for _, c := range md.CubeData {
 		r, err := strconv.ParseFloat(c.Rate, 64)
 		if err != nil {
 			return err
 		}
+
 		e.rates[c.Currency] = r
 	}
 
