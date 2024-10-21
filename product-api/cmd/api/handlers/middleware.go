@@ -9,11 +9,13 @@ import (
 // MiddlewareValidateProduct validates the product in the request and calls next if ok
 func (p *Products) MiddlewareValidateProduct(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Add("Content-Type", "application/json")
+
 		prod := &data.Product{}
 
 		err := data.FromJSON(prod, r.Body)
 		if err != nil {
-			p.l.Println("[ERROR] deserializing product", err)
+			p.l.Error("Deserializing product", "error", err)
 
 			rw.WriteHeader(http.StatusBadRequest)
 			data.ToJSON(&GenericError{Message: err.Error()}, rw)
@@ -23,7 +25,7 @@ func (p *Products) MiddlewareValidateProduct(next http.Handler) http.Handler {
 		// validate the product
 		errs := p.v.Validate(prod)
 		if len(errs) != 0 {
-			p.l.Println("[ERROR] validating product", errs)
+			p.l.Error("Validating product", "error", errs)
 
 			// return the validation messages as an array
 			rw.WriteHeader(http.StatusUnprocessableEntity)

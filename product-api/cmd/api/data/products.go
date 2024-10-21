@@ -3,27 +3,16 @@ package data
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/go-hclog"
 	protos "github.com/notoriouscode97/go-microservices/currency/protos/currency"
+
+	"github.com/hashicorp/go-hclog"
 )
 
 // ErrProductNotFound is an error raised when a product can not be found in the database
-var ErrProductNotFound = fmt.Errorf("Product not found")
-
-// swagger:response errorResponse
-type ErrorResponse struct {
-}
-
-// swagger:response errorValidation
-type ErrorValidation struct {
-}
-
-// swagger:response noContentResponse
-type NoContent struct {
-}
+var ErrProductNotFound = fmt.Errorf("product not found")
 
 // Product defines the structure for an API product
-// swagger:response productResponse
+// swagger:model
 type Product struct {
 	// the id for the product
 	//
@@ -76,7 +65,7 @@ func (p *ProductsDB) GetProducts(currency string) (Products, error) {
 
 	rate, err := p.getRate(currency)
 	if err != nil {
-		p.log.Error("unable to get rate", "currency", currency, "error", err)
+		p.log.Error("Unable to get rate", "currency", currency, "error", err)
 		return nil, err
 	}
 
@@ -105,7 +94,7 @@ func (p *ProductsDB) GetProductByID(id int, currency string) (*Product, error) {
 
 	rate, err := p.getRate(currency)
 	if err != nil {
-		p.log.Error("unable to get rate", "currency", currency, "error", err)
+		p.log.Error("Unable to get rate", "currency", currency, "error", err)
 		return nil, err
 	}
 
@@ -170,7 +159,6 @@ func (p *ProductsDB) getRate(destination string) (float64, error) {
 	}
 
 	resp, err := p.currency.GetRate(context.Background(), rr)
-
 	return resp.Rate, err
 }
 

@@ -5,6 +5,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/hashicorp/go-hclog"
 	"github.com/nicholasjackson/env"
 	protos "github.com/notoriouscode97/go-microservices/currency/protos/currency"
 	"github.com/notoriouscode97/go-microservices/product-api/cmd/api/data"
@@ -23,7 +24,7 @@ var bindAddress = env.String("BIND_ADDRESS", false, ":9090", "Bind address for t
 func main() {
 	_ = env.Parse()
 
-	l := log.New(os.Stdout, "products-api ", log.LstdFlags)
+	l := hclog.Default()
 	v := data.NewValidation()
 
 	conn, err := grpc.NewClient("localhost:9092", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -36,12 +37,20 @@ func main() {
 	// create client
 	cc := protos.NewCurrencyClient(conn)
 
-	ph := handlers.NewProducts(l, v, cc)
+	// create database instance
+	db := data.NewProductsDB(cc, l)
 
+	// create the handlers
+	ph := handlers.NewProducts(l, v, db)
+
+	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()
 
 	getR := sm.Methods(http.MethodGet).Subrouter()
+	getR.HandleFunc("/products", ph.ListAll).Queries("currency", "{[A-Z]{3}}")
 	getR.HandleFunc("/products", ph.ListAll)
+
+	getR.HandleFunc("/products/{id:[0-9]+}", ph.ListSingle).Queries("currency", "{[A-Z]{3}}")
 	getR.HandleFunc("/products/{id:[0-9]+}", ph.ListSingle)
 
 	putR := sm.Methods(http.MethodPut).Subrouter()
@@ -55,6 +64,7 @@ func main() {
 	deleteR := sm.Methods(http.MethodDelete).Subrouter()
 	deleteR.HandleFunc("/products/{id:[0-9]+}", ph.Delete)
 
+	// handler for documentation
 	ops := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
 	sh := middleware.Redoc(ops, nil)
 
@@ -67,19 +77,19 @@ func main() {
 	s := &http.Server{
 		Addr:         *bindAddress,
 		Handler:      ch(sm),
-		ErrorLog:     l,
+		ErrorLog:     l.StandardLogger(&hclog.StandardLoggerOptions{}),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 
 	go func() {
-		l.Println("Starting server on port 9090")
+		l.Info("Starting server on port 9090")
 
 		err := s.ListenAndServe()
 
 		if err != nil {
-			l.Printf("Error starting server: %s\n", err)
+			l.Error("Error starting server: %s\n", err)
 			os.Exit(1)
 		}
 	}()
@@ -101,7 +111,7 @@ func main() {
 	err = s.Shutdown(ctx)
 
 	if err != nil {
-		l.Printf("Error starting server: %s\n", err)
+		l.Error("Error starting server: %s\n", err)
 		os.Exit(1)
 	}
 }

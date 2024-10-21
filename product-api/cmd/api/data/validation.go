@@ -42,7 +42,7 @@ type Validation struct {
 // NewValidation creates a new Validation type
 func NewValidation() *Validation {
 	validate := validator.New()
-	_ = validate.RegisterValidation("sku", validateSKU)
+	validate.RegisterValidation("sku", validateSKU)
 
 	return &Validation{validate}
 }
