@@ -49,6 +49,6 @@ func (wr *WrappedResponseWriter) WriteHeader(statusCode int) {
 }
 
 func (wr *WrappedResponseWriter) Flush() {
-	wr.gw.Flush()
-	wr.gw.Close()
+	_ = wr.gw.Flush()
+	_ = wr.gw.Close()
 }

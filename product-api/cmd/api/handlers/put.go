@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/notoriouscode97/go-microservices/product-api/cmd/api/data"
 	"net/http"
 )
@@ -22,11 +23,11 @@ func (p *Products) Update(rw http.ResponseWriter, r *http.Request) {
 	p.l.Debug("Updating record id", prod.ID)
 
 	err := p.productDB.UpdateProduct(prod)
-	if err == data.ErrProductNotFound {
+	if errors.Is(err, data.ErrProductNotFound) {
 		p.l.Error("Product not found", err)
 
 		rw.WriteHeader(http.StatusNotFound)
-		data.ToJSON(&GenericError{Message: "Product not found in database"}, rw)
+		_ = data.ToJSON(&GenericError{Message: "Product not found in database"}, rw)
 		return
 	}
 

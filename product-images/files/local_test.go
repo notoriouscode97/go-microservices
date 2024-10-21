@@ -3,7 +3,7 @@ package files
 import (
 	"bytes"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,12 +11,12 @@ import (
 
 func setupLocal(t *testing.T) (*Local, string, func()) {
 	// create a temporary directory
-	dir, err := ioutil.TempDir("", "files")
+	dir, err := os.MkdirTemp("", "files")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	l, err := NewLocal(dir)
+	l, err := NewLocal(dir, 1024*1000*5)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func TestSavesContentsOfReader(t *testing.T) {
 	assert.NoError(t, err)
 
 	// check the contents of the file
-	d, err := ioutil.ReadAll(f)
+	d, err := io.ReadAll(f)
 	assert.NoError(t, err)
 	assert.Equal(t, fileContents, string(d))
 }
@@ -62,6 +62,6 @@ func TestGetsContentsAndWritesToWriter(t *testing.T) {
 	defer r.Close()
 
 	// read the full contents of the reader
-	d, err := ioutil.ReadAll(r)
+	d, err := io.ReadAll(r)
 	assert.Equal(t, fileContents, string(d))
 }

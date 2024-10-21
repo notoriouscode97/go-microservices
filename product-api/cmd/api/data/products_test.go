@@ -54,7 +54,7 @@ func TestValidProductDoesNOTReturnsErr(t *testing.T) {
 
 func TestProductsToJSON(t *testing.T) {
 	ps := []*Product{
-		&Product{
+		{
 			Name: "abc",
 		},
 	}

@@ -21,7 +21,7 @@ var basePath = env.String("BASE_PATH", false, "./imagestore", "Base path to save
 
 func main() {
 
-	env.Parse()
+	_ = env.Parse()
 
 	l := hclog.New(
 		&hclog.LoggerOptions{
@@ -85,7 +85,7 @@ func main() {
 		}
 	}()
 
-	// trap sigterm or interupt and gracefully shutdown the server
+	// trap sigterm or interrupt and gracefully shutdown the server
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, os.Kill)
@@ -95,6 +95,7 @@ func main() {
 	l.Info("Shutting down server with", "signal", sig)
 
 	// gracefully shutdown the server, waiting max 30 seconds for current operations to complete
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	s.Shutdown(ctx)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	_ = s.Shutdown(ctx)
 }

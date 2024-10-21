@@ -1,6 +1,7 @@
 package data
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"regexp"
@@ -26,7 +27,7 @@ type ValidationErrors []ValidationError
 
 // Errors converts the slice into a string slice
 func (v ValidationErrors) Errors() []string {
-	errs := []string{}
+	var errs []string
 	for _, err := range v {
 		errs = append(errs, err.Error())
 	}
@@ -42,7 +43,7 @@ type Validation struct {
 // NewValidation creates a new Validation type
 func NewValidation() *Validation {
 	validate := validator.New()
-	validate.RegisterValidation("sku", validateSKU)
+	_ = validate.RegisterValidation("sku", validateSKU)
 
 	return &Validation{validate}
 }
@@ -65,7 +66,8 @@ func NewValidation() *Validation {
 //				fmt.Println()
 //		}
 func (v *Validation) Validate(i interface{}) ValidationErrors {
-	errs := v.validate.Struct(i).(validator.ValidationErrors)
+	var errs validator.ValidationErrors
+	errors.As(v.validate.Struct(i), &errs)
 
 	if len(errs) == 0 {
 		return nil

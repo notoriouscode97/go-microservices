@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/notoriouscode97/go-microservices/product-api/cmd/api/data"
 	"net/http"
 )
@@ -21,11 +22,11 @@ func (p *Products) Delete(rw http.ResponseWriter, r *http.Request) {
 	p.l.Debug("Deleting record", "id", id)
 
 	err := p.productDB.DeleteProduct(id)
-	if err == data.ErrProductNotFound {
+	if errors.Is(err, data.ErrProductNotFound) {
 		p.l.Error("Unable to delete record id does not exist")
 
 		rw.WriteHeader(http.StatusNotFound)
-		data.ToJSON(&GenericError{Message: err.Error()}, rw)
+		_ = data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	}
 
@@ -33,7 +34,7 @@ func (p *Products) Delete(rw http.ResponseWriter, r *http.Request) {
 		p.l.Error("Unable to delete record", "error", err)
 
 		rw.WriteHeader(http.StatusInternalServerError)
-		data.ToJSON(&GenericError{Message: err.Error()}, rw)
+		_ = data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	}
 

@@ -48,7 +48,7 @@ func (e *ExchangeRates) getRates() error {
 	defer resp.Body.Close()
 
 	md := &Cubes{}
-	xml.NewDecoder(resp.Body).Decode(&md)
+	_ = xml.NewDecoder(resp.Body).Decode(&md)
 
 	for _, c := range md.CubeData {
 		r, err := strconv.ParseFloat(c.Rate, 64)

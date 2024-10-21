@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/notoriouscode97/go-microservices/product-api/cmd/api/data"
 	"net/http"
 )
@@ -20,7 +21,7 @@ func (p *Products) ListAll(rw http.ResponseWriter, r *http.Request) {
 	prods, err := p.productDB.GetProducts(cur)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		data.ToJSON(&GenericError{Message: err.Error()}, rw)
+		_ = data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	}
 
@@ -48,20 +49,19 @@ func (p *Products) ListSingle(rw http.ResponseWriter, r *http.Request) {
 
 	prod, err := p.productDB.GetProductByID(id, cur)
 
-	switch err {
-	case nil:
-
-	case data.ErrProductNotFound:
+	switch {
+	case err == nil:
+	case errors.Is(err, data.ErrProductNotFound):
 		p.l.Error("Unable to fetch product", "error", err)
 
 		rw.WriteHeader(http.StatusNotFound)
-		data.ToJSON(&GenericError{Message: err.Error()}, rw)
+		_ = data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	default:
 		p.l.Error("Unable to fetching product", "error", err)
 
 		rw.WriteHeader(http.StatusInternalServerError)
-		data.ToJSON(&GenericError{Message: err.Error()}, rw)
+		_ = data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	}
 

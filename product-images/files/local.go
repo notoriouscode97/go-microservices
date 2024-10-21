@@ -15,7 +15,7 @@ type Local struct {
 	basePath    string
 }
 
-// NewLocal creates a new Local filesytem with the given base path
+// NewLocal creates a new Local filesystem with the given base path
 // basePath is the base directory to save files to
 // maxSize is the max number of bytes that a file can be
 func NewLocal(basePath string, maxSize int) (*Local, error) {
@@ -28,7 +28,7 @@ func NewLocal(basePath string, maxSize int) (*Local, error) {
 }
 
 // Save the contents of the Writer to the given path
-// path is a relative path, basePath will be appended
+// paths is a relative path, basePath will be appended
 func (l *Local) Save(path string, contents io.Reader) error {
 	// get the full path for the file
 	fp := l.fullPath(path)
