@@ -74,6 +74,8 @@ github.com/nicholasjackson/env v0.6.1 h1:73Lw4Jbs/F/59Zzz2FO2sHsV2M/oCA8Vl79YSc6
 github.com/nicholasjackson/env v0.6.1/go.mod h1:/GtSb9a/BDUCLpcnpauN0d/Bw5ekSI1vLC1b9Lw0Vyk=
 github.com/notoriouscode97/go-microservices/currency v0.0.0-20241017085725-9c059b5ba9fb h1:v5NS3r0o9Xfn2AdTG76cwPLdz0E3Sc7YF8scVVh+p4E=
 github.com/notoriouscode97/go-microservices/currency v0.0.0-20241017085725-9c059b5ba9fb/go.mod h1:OXidq9HUaffJkXDjOh3l4OHCWZnWHSTPBMhjlCTF/oY=
+github.com/notoriouscode97/go-microservices/currency v0.0.0-20241021122540-b26d57cfa1d1 h1:vBIZpwHjMG6gsouCR/MjNGHHu1vmW1ElayIDeQuSyj4=
+github.com/notoriouscode97/go-microservices/currency v0.0.0-20241021122540-b26d57cfa1d1/go.mod h1:OXidq9HUaffJkXDjOh3l4OHCWZnWHSTPBMhjlCTF/oY=
 github.com/oklog/ulid v1.3.1 h1:EGfNDEx6MqHz8B3uNV6QAib1UR2Lm97sHi3ocA6ESJ4=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
