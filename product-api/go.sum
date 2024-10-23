@@ -85,6 +85,8 @@ github.com/notoriouscode97/go-microservices/currency v0.0.0-20241021122540-b26d5
 github.com/notoriouscode97/go-microservices/currency v0.0.0-20241021122540-b26d57cfa1d1/go.mod h1:OXidq9HUaffJkXDjOh3l4OHCWZnWHSTPBMhjlCTF/oY=
 github.com/notoriouscode97/go-microservices/currency v0.0.0-20241023091717-caf36fd970ac h1:rWSfKFbZvO8W/RRyWbk7hHboEVte2jjRnoyNv5Mz0oQ=
 github.com/notoriouscode97/go-microservices/currency v0.0.0-20241023091717-caf36fd970ac/go.mod h1:OXidq9HUaffJkXDjOh3l4OHCWZnWHSTPBMhjlCTF/oY=
+github.com/notoriouscode97/go-microservices/currency v0.0.0-20241023140100-1c53375cbef6 h1:Wu9jFdhifN2Ec6Y8TUZJSd8c1Wyg9kXNINbnk7vGPCk=
+github.com/notoriouscode97/go-microservices/currency v0.0.0-20241023140100-1c53375cbef6/go.mod h1:OXidq9HUaffJkXDjOh3l4OHCWZnWHSTPBMhjlCTF/oY=
 github.com/oklog/ulid v1.3.1 h1:EGfNDEx6MqHz8B3uNV6QAib1UR2Lm97sHi3ocA6ESJ4=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=

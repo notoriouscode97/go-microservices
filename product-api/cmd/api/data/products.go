@@ -74,7 +74,7 @@ func (p *ProductsDB) handleUpdates() {
 	for {
 		rr, err := sub.Recv()
 		p.log.Info("received updated rate from server", "dest", rr.GetDestination().String())
-
+		rr.GetRate()
 		if err != nil {
 			p.log.Error("error receiving message", "error", err)
 			return
