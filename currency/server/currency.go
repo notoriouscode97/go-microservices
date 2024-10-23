@@ -5,6 +5,8 @@ import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/notoriouscode97/go-microservices/currency/data"
 	protos "github.com/notoriouscode97/go-microservices/currency/protos/currency"
+	"io"
+	"time"
 )
 
 type Currency struct {
@@ -30,4 +32,32 @@ func (c *Currency) GetRate(ctx context.Context, rr *protos.RateRequest) (*protos
 	}
 
 	return &protos.RateResponse{Rate: rate}, nil
+}
+
+func (c *Currency) SubscribeRates(src protos.Currency_SubscribeRatesServer) error {
+
+	go func() {
+		for {
+			rr, err := src.Recv()
+			if err == io.EOF {
+				c.log.Info("client has closed connection")
+				break
+			}
+			if err != nil {
+				c.log.Error("unable to read from client", "error", err)
+				break
+			}
+
+			c.log.Info("handle client request", "request", rr)
+		}
+	}()
+
+	for {
+		err := src.Send(&protos.RateResponse{Rate: 12.1})
+		if err != nil {
+			return err
+		}
+
+		time.Sleep(5 * time.Second)
+	}
 }
