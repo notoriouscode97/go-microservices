@@ -2,10 +2,13 @@ package data
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	protos "github.com/notoriouscode97/go-microservices/currency/protos/currency"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"time"
 
 	"github.com/hashicorp/go-hclog"
 )
@@ -22,13 +25,13 @@ type Product struct {
 	// min: 1
 	ID int `json:"id"` // Unique identifier for the product
 
-	// the name for this poduct
+	// the name for this product
 	//
 	// required: true
 	// max length: 255
 	Name string `json:"name" validate:"required"`
 
-	// the description for this poduct
+	// the description for this product
 	//
 	// required: false
 	// max length: 10000
@@ -51,14 +54,15 @@ type Product struct {
 type Products []*Product
 
 type ProductsDB struct {
+	db       *sql.DB
 	currency protos.CurrencyClient
 	log      hclog.Logger
 	rates    map[string]float64
 	client   protos.Currency_SubscribeRatesClient
 }
 
-func NewProductsDB(c protos.CurrencyClient, l hclog.Logger) *ProductsDB {
-	pb := &ProductsDB{c, l, make(map[string]float64), nil}
+func NewProductsDB(db *sql.DB, c protos.CurrencyClient, l hclog.Logger) *ProductsDB {
+	pb := &ProductsDB{db, c, l, make(map[string]float64), nil}
 	go pb.handleUpdates()
 
 	return pb
@@ -88,97 +92,185 @@ func (p *ProductsDB) handleUpdates() {
 
 // GetProducts returns all products from the database
 func (p *ProductsDB) GetProducts(currency string) (Products, error) {
-	if currency == "" {
-		return productList, nil
-	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-	rate, err := p.getRate(currency)
+	rows, err := p.db.QueryContext(ctx, "SELECT id, name, description, price, sku FROM products")
+
 	if err != nil {
-		p.log.Error("Unable to get rate", "currency", currency, "error", err)
+		p.log.Error("error fetching products:", err)
 		return nil, err
 	}
 
-	pr := Products{}
-	for _, p := range productList {
-		np := *p
-		np.Price = np.Price * rate
-		pr = append(pr, &np)
+	defer rows.Close()
+
+	var products Products
+
+	var rate = 1.0 // Default rate if no currency is provided
+
+	if currency != "" {
+		rate, err = p.getRate(currency)
+		if err != nil {
+			p.log.Error("unable to get rate", "currency", currency, "error", err)
+			return nil, err
+		}
 	}
 
-	return pr, nil
+	for rows.Next() {
+		var prod Product
+
+		if err := rows.Scan(&prod.ID, &prod.Name, &prod.Description, &prod.Price, &prod.SKU); err != nil {
+			p.log.Error("error scanning product", "error", err)
+			return nil, err
+		}
+
+		prod.Price *= rate
+		products = append(products, &prod)
+	}
+
+	if err = rows.Err(); err != nil {
+		p.log.Error("error fetching products:", err)
+		return nil, err
+	}
+
+	return products, nil
 }
 
 // GetProductByID returns a single product which matches the id from the
 // database.
 // If a product is not found this function returns a ProductNotFound error
 func (p *ProductsDB) GetProductByID(id int, currency string) (*Product, error) {
-	i := findIndexByProductID(id)
-	if id == -1 {
+	if id < 1 {
 		return nil, ErrProductNotFound
 	}
 
-	if currency == "" {
-		return productList[i], nil
-	}
+	query := `SELECT id, name, description, price, sku FROM products
+	WHERE id = $1`
 
-	rate, err := p.getRate(currency)
+	var product Product
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := p.db.QueryRowContext(ctx, query, id).Scan(
+		&product.ID,
+		&product.Name,
+		&product.Description,
+		&product.Price,
+		&product.SKU,
+	)
+
 	if err != nil {
-		p.log.Error("Unable to get rate", "currency", currency, "error", err)
-		return nil, err
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrProductNotFound
+		default:
+			return nil, err
+		}
 	}
 
-	np := *productList[i]
-	np.Price = np.Price * rate
+	var rate = 1.0 // Default rate if no currency is provided
 
-	return &np, nil
+	if currency != "" {
+		rate, err = p.getRate(currency)
+		if err != nil {
+			p.log.Error("unable to get rate", "currency", currency, "error", err)
+			return nil, err
+		}
+	}
+
+	product.Price *= rate
+
+	return &product, nil
 }
 
 // UpdateProduct replaces a product in the database with the given
 // item.
 // If a product with the given id does not exist in the database
 // this function returns a ProductNotFound error
-func (p *ProductsDB) UpdateProduct(pr Product) error {
-	i := findIndexByProductID(pr.ID)
-	if i == -1 {
-		return ErrProductNotFound
+func (p *ProductsDB) UpdateProduct(pr *Product) error {
+	query := `UPDATE products SET name = $1, description = $2, price = $3, sku = $4 WHERE id = $5`
+
+	args := []any{
+		pr.Name,
+		pr.Description,
+		pr.Price,
+		pr.SKU,
+		pr.ID,
 	}
 
-	// update the product in the DB
-	productList[i] = &pr
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := p.db.ExecContext(ctx, query, args...)
+
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrProductNotFound // No rows updated
+	}
 
 	return nil
 }
 
 // AddProduct adds a new product to the database
-func (p *ProductsDB) AddProduct(pr Product) {
-	// get the next id in sequence
-	maxID := productList[len(productList)-1].ID
-	pr.ID = maxID + 1
-	productList = append(productList, &pr)
-}
+func (p *ProductsDB) AddProduct(pr *Product) error {
+	query := `INSERT INTO products (name, description, price, sku) VALUES ($1, $2, $3, $4) RETURNING id`
 
-// DeleteProduct deletes a product from the database
-func (p *ProductsDB) DeleteProduct(id int) error {
-	i := findIndexByProductID(id)
-	if i == -1 {
-		return ErrProductNotFound
+	args := []any{
+		pr.Name,
+		pr.Description,
+		pr.Price,
+		pr.SKU,
 	}
 
-	productList = append(productList[:i], productList[i+1])
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := p.db.QueryRowContext(ctx, query, args...).Scan(&pr.ID)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-// findIndex finds the index of a product in the database
-// returns -1 when no product can be found
-func findIndexByProductID(id int) int {
-	for i, p := range productList {
-		if p.ID == id {
-			return i
-		}
+// DeleteProduct deletes a product from the database
+func (p *ProductsDB) DeleteProduct(id int) error {
+	if id < 1 {
+		return ErrProductNotFound
 	}
 
-	return -1
+	query := `DELETE FROM products WHERE id = $1`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := p.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrProductNotFound
+	}
+
+	return nil
 }
 
 func (p *ProductsDB) getRate(destination string) (float64, error) {
@@ -212,24 +304,7 @@ func (p *ProductsDB) getRate(destination string) (float64, error) {
 	p.rates[destination] = resp.Rate // update cache
 
 	// subscribe for updates
-	p.client.Send(rr)
+	_ = p.client.Send(rr)
 
 	return resp.Rate, err
-}
-
-var productList = []*Product{
-	{
-		ID:          1,
-		Name:        "Latte",
-		Description: "Frothy milky coffee",
-		Price:       2.45,
-		SKU:         "abc323",
-	},
-	{
-		ID:          2,
-		Name:        "Espresso",
-		Description: "Short and strong coffee without milk",
-		Price:       1.99,
-		SKU:         "fjd34",
-	},
 }

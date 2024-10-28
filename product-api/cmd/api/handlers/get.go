@@ -37,6 +37,7 @@ func (p *Products) ListAll(rw http.ResponseWriter, r *http.Request) {
 // responses:
 //	200: productResponse
 //	404: errorResponse
+//  500: errorResponse
 
 // ListSingle handles GET requests
 func (p *Products) ListSingle(rw http.ResponseWriter, r *http.Request) {
@@ -52,22 +53,23 @@ func (p *Products) ListSingle(rw http.ResponseWriter, r *http.Request) {
 	switch {
 	case err == nil:
 	case errors.Is(err, data.ErrProductNotFound):
-		p.l.Error("Unable to fetch product", "error", err)
+		p.l.Error("unable to fetch product", "error", err)
 
 		rw.WriteHeader(http.StatusNotFound)
 		_ = data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	default:
-		p.l.Error("Unable to fetching product", "error", err)
+		p.l.Error("unable to fetching product", "error", err)
 
 		rw.WriteHeader(http.StatusInternalServerError)
 		_ = data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	}
 
+	rw.WriteHeader(http.StatusOK) // 200
 	err = data.ToJSON(prod, rw)
 	if err != nil {
-		// we should never be here but log the error just incase
-		p.l.Error("Unable to serializing product", err)
+		// we should never be here but log the error just in case
+		p.l.Error("unable to serializing product", err)
 	}
 }
