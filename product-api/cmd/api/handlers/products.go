@@ -33,6 +33,11 @@ type GenericError struct {
 	Message string `json:"message"`
 }
 
+// GenericResponse is a generic response message returned by a server
+type GenericResponse struct {
+	Message string `json:"message"`
+}
+
 // ValidationError is a collection of validation error messages
 type ValidationError struct {
 	Messages []string `json:"messages"`

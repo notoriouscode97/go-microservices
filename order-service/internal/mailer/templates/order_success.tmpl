@@ -1,0 +1,34 @@
+{{define "subject"}}Welcome to Dusan's Coffee Shop!{{end}}
+{{define "plainBody"}}
+Hi,
+Thanks for ordering from Dusan's Coffee Shop. We're excited to have you as our customer!
+Your order is on the way
+{"items": "{{.items}}"}
+Please note that this is can take up to 2 days.
+Thanks,
+Dusan's Coffee Shop
+{{end}}
+{{define "htmlBody"}}
+<!doctype html>
+<html>
+<head>
+<meta name=
+"viewport" content=
+"width=device-width" />
+<meta http-equiv=
+"Content-Type" content=
+"text/html; charset=UTF-8" />
+</head>
+<body>
+<p>Hi,</p>
+<p>Thanks for ordering from Dusan's Coffee Shop. We're excited to have you as our customer!</p>
+<p>Your order is on the way</p>
+<pre><code>
+{"items": "{{.items}}"}
+</code></pre>
+<p>Please note that this is can take up to 2 days.</p>
+<p>Thanks,</p>
+<p>Dusan's Coffee Shop</p>
+</body>
+</html>
+{{end}}

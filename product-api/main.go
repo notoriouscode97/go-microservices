@@ -15,7 +15,6 @@ import (
 	"github.com/notoriouscode97/go-microservices/product-api/cmd/api/handlers"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -42,7 +41,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	defer conn.Close()
+	defer func(conn *grpc.ClientConn) {
+		err := conn.Close()
+		if err != nil {
+			l.Error("error closing gRPC client connection", err)
+		}
+	}(conn)
 
 	// create client
 	cc := protos.NewCurrencyClient(conn)
@@ -57,10 +61,18 @@ func main() {
 	// create database instance
 	db := data.NewProductsDB(openDb, cc, l)
 
-	// create the handlers
+	// create the server
 	ph := handlers.NewProducts(l, v, db)
 
-	// create a new serve mux and register the handlers
+	// init message broker
+	err = ph.InitRabbitMQ()
+
+	if err != nil {
+		l.Error("error initializing RabbitMQ", err)
+		os.Exit(1)
+	}
+
+	// create a new serve mux and register the server
 	sm := mux.NewRouter()
 
 	getR := sm.Methods(http.MethodGet).Subrouter()
@@ -87,6 +99,10 @@ func main() {
 
 	getR.Handle("/docs", sh)
 	getR.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+
+	rabbitR := sm.Methods(http.MethodPost).Subrouter()
+	rabbitR.HandleFunc("/orders", ph.CreateOrder)
+	rabbitR.Use(ph.MiddlewareValidateOrder)
 
 	// CORS
 	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{cfg.CorsAllowedOrigin}))
@@ -120,7 +136,7 @@ func main() {
 
 	// Block until a signal is received.
 	sig := <-c
-	log.Println("Got signal:", sig)
+	l.Info("Got signal:", sig)
 
 	// gracefully shutdown the server, waiting max 30 seconds for current operations to complete
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -133,6 +149,9 @@ func main() {
 		l.Error("Error starting server: %s\n", err)
 		os.Exit(1)
 	}
+
+	// Call ShutdownRabbitMQ to close RabbitMQ connections after the server is shut down
+	ph.ShutdownRabbitMQ()
 }
 
 func openDB(cfg config.Settings) (*sql.DB, error) {
