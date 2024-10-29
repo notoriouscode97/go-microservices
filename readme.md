@@ -1,6 +1,6 @@
 # Coffee Shop Microservices Project
 
-This project is a microservices-based system for a coffee shop application, built using Golang with four primary microservices to manage products, orders, product images, and currency conversion. It leverages RabbitMQ for message brokering, PostgreSQL for data storage, and gRPC for inter-service communication, and Protocol Buffers (protobufs) for efficient data serialization..
+This project is a microservices-based system for a coffee shop application, built using Golang with four primary microservices to manage products, orders, product images, and currency conversion. It leverages RabbitMQ for message brokering, PostgreSQL for data storage, gRPC for inter-service communication, and Protocol Buffers (protobufs) for efficient data serialization..
 
 ## Table of Contents
 1. [Microservices Overview](#microservices-overview)
