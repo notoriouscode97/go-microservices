@@ -23,6 +23,7 @@ This project is a microservices-based system for a coffee shop application, buil
 
 ### 1. Product API
 This service manages CRUD operations for products and initiates order creation. The API is built using the Gorilla Mux router and utilizes PostgreSQL as its database.
+Every endpoint in the Product API is documented using Swagger, and the documentation can be accessed at `/docs`.
 
 **Endpoints:**
 - `/products`: CRUD operations for products
